@@ -1,3 +1,5 @@
+credit to user Rerosu#3144 on Discord.
+
 # cách sử dụng tool
 1. Mở cmd hoặc terminal thư mục
 2. npm install - cài đặt thư viện node modules
