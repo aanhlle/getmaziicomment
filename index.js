@@ -4,6 +4,34 @@ const inputFileName = params[0];
 const outputFileName = params[1];
 const XLSX = require('xlsx');
 const Excel = require('exceljs');
+const readline = require('readline');
+var URL;
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+rl.question("Wanna find comments from Kanji or words? ", function(url) {
+
+  if(url.toLowerCase() =="kanji"){
+    URL = "https://mazii.net/#!/search?type=k&query="
+    console.log("start searching kanji comment")
+  } else {
+    URL = "https://mazii.net/search?type=w&query="
+    console.log("start searching word comment")
+  }
+  rl.close();
+  main();
+});
+
+function main() {
+  console.log("======= START ======")
+  const wb = XLSX.readFile(`${inputFileName}.xlsx`);
+  const sheet_name_list = wb.SheetNames;
+  const data = XLSX.utils.sheet_to_json(wb.Sheets[sheet_name_list[0]]);
+  doCrawl(data);
+}
 
 async function getCommentsOfKanji(URL, listKanji) {
   try {
@@ -16,7 +44,7 @@ async function getCommentsOfKanji(URL, listKanji) {
       });
       let content = await page.evaluate(async () => {
         let comments = document.querySelectorAll('p.mean');
-        if (comments.length < 1) return 'Không có nghĩa';
+        if (comments.length < 1) return 'Không có comment';
         comments = [...comments][0];
         return comments.innerHTML.trim();
       });
@@ -37,7 +65,6 @@ async function getCommentsOfKanji(URL, listKanji) {
 }
 
 async function doCrawl(data) {
-  const URL = 'https://mazii.net/#!/search?dict=javi&type=k&query=';
   let kanji = [];
   let count = 0;
   while (data.length > 0) {
@@ -49,9 +76,6 @@ async function doCrawl(data) {
   }
   console.log("======= COMPLETED ======")
 }
-
-
-
 
 function appendToExcel(each10Rs,num) {
   const workbook = new Excel.Workbook();
@@ -68,17 +92,3 @@ function appendToExcel(each10Rs,num) {
       return workbook.xlsx.writeFile(`${outputFileName}.xlsx`);
     })
   }
-
-
-  function main() {
-    console.log("======= START ======")
-    const wb = XLSX.readFile(`${inputFileName}.xlsx`);
-    const sheet_name_list = wb.SheetNames;
-    const data = XLSX.utils.sheet_to_json(wb.Sheets[sheet_name_list[0]]);
-    doCrawl(data);
-  }
-
-
-
-
-  main();
